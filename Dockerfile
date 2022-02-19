@@ -1,17 +1,22 @@
 FROM varnish:fresh-alpine as alpine
-COPY default.vcl /etc/varnish/
 
 RUN apk add --update nodejs npm
-RUN  npm install -g foreman
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN npm --global config set user appuser && \
+  npm --global install foreman
+
+RUN mkdir /app
+RUN chown -R appuser:appgroup /app
 WORKDIR /app
 
-COPY package.json .
-COPY package-lock.json .
-RUN npm install --production
+COPY default.vcl /etc/varnish/default.vcl
 COPY . .
+
+RUN chmod +x /app/entrypoint.sh
+RUN npm install --production
 
 EXPOSE 3000 8080 443
 
-COPY Procfile Procfile
-
-CMD nf start
+USER appuser
+ENTRYPOINT ["sh","./entrypoint.sh", "nf", "start"]
+USER root
