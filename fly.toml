@@ -1,14 +1,10 @@
-# fly.toml file generated for fly-varnish on 2022-02-19T10:40:05-04:00
+# fly.toml file generated for fly-varnish on 2022-02-20T15:15:41-04:00
 
 app = "fly-varnish"
 
-[processes]  #cdn = "/usr/sbin/varnishd -F -f /etc/varnish/default.vcl -a http=:8080,HTTP -a proxy=:8443,PROXY -T none"
-  cdn = "/usr/sbin/varnishd -F -f /etc/varnish/default.vcl -T none"
-  web = "node server.js"
 
 [[services]]
   internal_port = 8080
-  processes = ["cdn"]
   protocol = "tcp"
 
   [[services.ports]]
@@ -18,12 +14,3 @@ app = "fly-varnish"
   [[services.ports]]
     handlers = ["tls", "http"]
     port = "443"
-
-[[services]]
-  internal_port = 8080
-  processes = ["web"]
-  protocol = "tcp"
-
-  [[services.ports]]
-    handlers = ["tls", "http"]
-    port = "8080"

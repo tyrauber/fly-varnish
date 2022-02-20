@@ -1,5 +1,5 @@
 # fly-varnish
-A Varnish Docker Container Caching a Node Server on Fly.io using [processes](https://community.fly.io/t/preview-multi-process-apps-get-your-workers-here/2316).
+A Varnish Docker Container Caching a Node Server on Fly.io.
 
 ## Usage
 
@@ -32,6 +32,48 @@ Sign up for Fly.io and deploy:
 
 `fly launch`
 
+Now let's curl from the Fly App:
+
+```
+$ curl -I https://app_name.fly.dev/
+HTTP/2 200 
+x-powered-by: Express
+content-type: text/html; charset=utf-8
+content-length: 32
+etag: W/"20-jOVk+DeeZmEt1wO5PpDKHSGXcfE"
+date: Sun, 20 Feb 2022 19:18:34 GMT
+x-varnish: 5 3
+age: 32
+via: 1.1 varnish (Varnish/7.0), 2 fly.io
+accept-ranges: bytes
+x-cache: hit cached
+server: Fly/90620415 (2022-02-19)
+fly-request-id: 01FWC95HZVBZ62QEE2AMC4BWD9-mia
+```
+
+And check the logs:
+
+```
+$ fly logs
+2022-02-20T19:16:13Z runner[c581869e] mia [info]Starting instance
+2022-02-20T19:16:13Z runner[c581869e] mia [info]Configuring virtual machine
+2022-02-20T19:16:13Z runner[c581869e] mia [info]Pulling container image
+2022-02-20T19:16:15Z runner[c581869e] mia [info]Unpacking image
+2022-02-20T19:16:17Z runner[c581869e] mia [info]Preparing kernel init
+2022-02-20T19:16:18Z runner[c581869e] mia [info]Configuring firecracker
+2022-02-20T19:16:19Z runner[c581869e] mia [info]Starting virtual machine
+2022-02-20T19:16:19Z app[c581869e] mia [info]Starting init (commit: 0c50bff)...
+2022-02-20T19:16:19Z app[c581869e] mia [info]Preparing to run: `/app/entrypoint.sh node server` as root
+2022-02-20T19:16:19Z app[c581869e] mia [info]2022/02/20 19:16:19 listening on [fdaa:0:4cc2:a7b:2c01:c581:869e:2]:22 (DNS: [fdaa::3]:53)
+2022-02-20T19:16:19Z app[c581869e] mia [info]HelloNode app listening on port 3000!
+2022-02-20T19:16:20Z app[c581869e] mia [info].Debug: Version: varnish-7.0.2 revision 9b5f68e19ca0ab60010641e305fd12822f18d42c
+2022-02-20T19:16:20Z app[c581869e] mia [info]Debug: Platform: Linux,5.12.2,x86_64,-junix,-sdefault,-sdefault,-hcritbit
+2022-02-20T19:16:20Z app[c581869e] mia [info]Debug: Child (539) Started
+2022-02-20T19:16:20Z app[c581869e] mia [info]Info: Child (539) said Child starts
+2022-02-20T19:18:34Z app[c581869e] mia [info]fly-varnish.fly.dev X.X.X.X - - [20/Feb/2022:19:18:34 +0000] "GET http://app_name.fly.dev/ HTTP/1.1" 200 32 "https://fly.io/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36" "miss"
+```
+
+And we are pushing Varnish Logs to Fly. AWESOME.
 
 ## Further Reading:
 

@@ -1,12 +1,17 @@
 FROM varnish:fresh-alpine as alpine
-RUN apk add --update nodejs npm
+RUN apk add --update nodejs npm curl
 WORKDIR /app
 
+COPY . .
 COPY default.vcl /etc/varnish/default.vcl
-COPY package.json .
-COPY package-lock.json .
 RUN npm install --production
 
-COPY . .
 EXPOSE 3000 8080
-CMD [ "node","server.js" ]
+ENV PORT=3000
+RUN ["chmod", "+w", "/dev/stdout"]
+
+ADD entrypoint.sh .
+RUN chmod +x /app/entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+CMD ["node", "server"]
