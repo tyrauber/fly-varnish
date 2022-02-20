@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "docker:build": "docker build -t fly-varnish .",
-    "docker:test": "docker run -p 8080:8080 fly-varnish"
+    "docker:test": "docker run -p 8080:8080 -p 3000:3000 fly-varnish"
   },
   "dependencies": {
     "express": "^4.17.1"
