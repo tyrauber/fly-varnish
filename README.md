@@ -1,5 +1,5 @@
 # fly-varnish
-A Varnish Docker Container using a Forman Procfile to run and cache multiple Node processes
+A Varnish Docker Container Caching a Node Server on Fly.io using [processes](https://community.fly.io/t/preview-multi-process-apps-get-your-workers-here/2316).
 
 ## Usage
 
