@@ -1,54 +1,66 @@
+#
+# ---- Base ----
 
-# ---- Base Node ----
+FROM alpine:latest as base
 
-FROM varnish:fresh-alpine as base
+ENV VARNISH_VERSION=7.0.2-r0 \
+    VCL_DIR='/etc/varnish' \
+    VCL_FILE='default.vcl' \
+    VARNISH_CACHE_SIZE=64m \
+    VARNISH_PORT=80
+  
+RUN apk add -q \
+    npm \
+    curl \
+    git \
+    gzip \
+    tar \
+    sudo
 
-ARG VARNISH_SIZE 100M
+RUN apk --update add \
+  varnish=$VARNISH_VERSION
 
-RUN apk add --update nodejs
+COPY package.json /.
+
+#
+# ---- Build ----
+
+FROM base as build
+WORKDIR /tmp
+
+RUN apk --update add \
+  varnish-dev=$VARNISH_VERSION
+
 RUN apk add -q \
     autoconf \
     automake \
     build-base \
-    curl \
     ca-certificates \
     cpio \
-    git \
     gzip \
     libedit-dev \
     libtool \
     libunwind-dev \
     linux-headers \
-    npm \
-    make \
-    pcre2-dev \
+    pcre-dev \
     py-docutils \
     py3-sphinx \
     tar \
     sudo
 
-COPY package.json .
-
-# #
-# # ---- Build ----
-
-FROM base AS build
-
-WORKDIR /opt
+RUN git clone --depth=1 https://github.com/varnish/varnish-modules.git \
+  && cd varnish-modules \
+  && ./bootstrap \
+  && ./configure --prefix=/usr \
+  && make -j4 \
+  && make check \
+  && make install
 
 RUN curl -L https://github.com/DarthSim/hivemind/releases/download/v1.1.0/hivemind-v1.1.0-linux-amd64.gz -o hivemind.gz \
   && gunzip hivemind.gz \
   && mv hivemind /usr/local/bin
 
-RUN git clone https://github.com/varnish/varnish-modules.git /tmp/vm && \
-    cd /tmp/vm && \
-    ./bootstrap && \
-    ./configure && \
-    make && \
-    make check && \
-    make install
-
-WORKDIR /app
+RUN rm -rf /tmp
 
 #
 # ---- Dependencies ----
@@ -66,6 +78,7 @@ FROM base AS release
 WORKDIR /app
 COPY --from=dependencies /prod_node_modules ./node_modules
 COPY --from=build /usr/local/bin/hivemind /usr/local/bin/hivemind
+COPY --from=build /usr/lib/varnish/vmods/ /usr/lib/varnish/vmods/
 
 COPY . .
 COPY default.vcl /etc/varnish/default.vcl

@@ -12,9 +12,6 @@ sub vcl_recv {
   unset req.http.fly-cache-status;
 
   if (req.method == "PURGE") {
-      if (client.ip !~ purgers) {
-        return (synth(403, "Forbidden"));
-      }
     if (req.http.xkey) {
       set req.http.n-gone = xkey.purge(req.http.xkey);
       # or: set req.http.n-gone = xkey.softpurge(req.http.xkey)
