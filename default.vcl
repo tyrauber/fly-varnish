@@ -1,4 +1,5 @@
 vcl 4.0;
+import xkey;
 
 backend default {
   .host = "127.0.0.1";
@@ -6,11 +7,22 @@ backend default {
 }
 
 sub vcl_recv {
-  if (req.method == "PURGE") {
-    return (purge);
-  }
+
   unset req.http.x-cache;
   unset req.http.fly-cache-status;
+
+  if (req.method == "PURGE") {
+      if (client.ip !~ purgers) {
+        return (synth(403, "Forbidden"));
+      }
+    if (req.http.xkey) {
+      set req.http.n-gone = xkey.purge(req.http.xkey);
+      # or: set req.http.n-gone = xkey.softpurge(req.http.xkey)
+      return (synth(200, "Invalidated "+req.http.n-gone+" objects"));
+    } else {
+      return (purge);
+    }
+  }
 }
 
 sub vcl_hit {

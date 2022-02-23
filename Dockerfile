@@ -7,10 +7,23 @@ ARG VARNISH_SIZE 100M
 
 RUN apk add --update nodejs
 RUN apk add -q \
+    autoconf \
+    automake \
+    build-base \
     curl \
+    ca-certificates \
+    cpio \
     git \
     gzip \
+    libedit-dev \
+    libtool \
+    libunwind-dev \
+    linux-headers \
     npm \
+    make \
+    pcre2-dev \
+    py-docutils \
+    py3-sphinx \
     tar \
     sudo
 
@@ -21,17 +34,19 @@ COPY package.json .
 
 FROM base AS build
 
+WORKDIR /opt
+
 RUN curl -L https://github.com/DarthSim/hivemind/releases/download/v1.1.0/hivemind-v1.1.0-linux-amd64.gz -o hivemind.gz \
   && gunzip hivemind.gz \
   && mv hivemind /usr/local/bin
 
-RUN git clone --branch master --single-branch https://github.com/varnish/varnish-modules.git
-WORKDIR /varnish-modules
-RUN ./bootstrap && \
+RUN git clone https://github.com/varnish/varnish-modules.git /tmp/vm && \
+    cd /tmp/vm && \
+    ./bootstrap && \
     ./configure && \
     make && \
-    make install &\
-    rm -rf /varnish-modules
+    make check && \
+    make install
 
 WORKDIR /app
 

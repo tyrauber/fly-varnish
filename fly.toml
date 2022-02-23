@@ -1,6 +1,7 @@
-# fly.toml file generated for fly-varnish on 2022-02-20T15:15:41-04:00
+# fly.toml file generated for fly-varnish on 2022-02-23T08:35:54-04:00
 
 app = "fly-varnish"
+
 
 [[services]]
   internal_port = 8080
