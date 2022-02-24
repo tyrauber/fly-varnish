@@ -9,15 +9,16 @@ ENV VARNISH_VERSION=7.0.2-r0 \
     VARNISH_CACHE_SIZE=64m \
     VARNISH_PORT=80
 
+RUN mkdir /app;
 RUN mkdir /data;
 
-RUN apk add -q npm curl git gzip tar
+COPY package.json /app
+
+RUN apk add -q npm yarn curl git gzip tar
 
 RUN apk --update add varnish=$VARNISH_VERSION
 
 RUN export PKG_CONFIG_PATH=/dlib-install/usr/local/lib64/pkgconfig/
-
-COPY package.json /.
 
 #
 # ---- Build ----
@@ -82,6 +83,8 @@ RUN rm -rf /tmp
 
 FROM base AS dependencies
 
+COPY package.json .
+
 RUN npm set progress=false && npm config set depth 0
 RUN npm install --only=production 
 RUN cp -R node_modules /prod_node_modules
@@ -104,20 +107,28 @@ RUN npm install
 #
 # ---- Release ----
 FROM base AS release
-WORKDIR /app
+
 COPY --from=dependencies /prod_node_modules ./node_modules
 COPY --from=build /usr/local/bin/hivemind /usr/local/bin/hivemind
 COPY --from=build /usr/lib/varnish/vmods/ /usr/lib/varnish/vmods/
 COPY --from=build /usr/local/lib/libmaxminddb.*  /usr/local/lib/
 # COPY --from=dependencies /data /data
-RUN ls
 
-COPY . .
-COPY default.vcl /etc/varnish/default.vcl
-COPY Procfile Procfile
+
+COPY ./apps/fly-varnish/* /app/
+COPY ./apps/fly-varnish/default.vcl /etc/varnish/default.vcl
+COPY ./apps/fly-varnish/Procfile Procfile
 
 RUN chmod +x /usr/local/bin/hivemind
-RUN chmod +x /app/scripts/*.sh
+RUN chmod +x /app/*.sh
+
+WORKDIR /app
+
+# COPY . .
+
+# COPY ./lib/scripts/* /app/scripts/
+# COPY .default.vcl /etc/varnish/default.vcl
+# COPY Procfile Procfile
 
 EXPOSE 3000 8080
 ENV PORT=3000

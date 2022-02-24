@@ -18,4 +18,4 @@ app.get(["/", "/:name"], (req, res) => {
   res.send(html);
 });
 
-app.listen(port, () => console.log(`HelloNode app listening on port ${port}!`));
+app.listen(port, () => console.log(`Dashboard listening on port ${port}!`));
