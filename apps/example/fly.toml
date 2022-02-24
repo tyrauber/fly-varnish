@@ -1,6 +1,6 @@
 # fly.toml file generated for fly-varnish on 2022-02-23T08:35:54-04:00
 
-app = "fly-varnish"
+app = "fly-varnish-example"
 
 [mounts]
 source="varnish_data"

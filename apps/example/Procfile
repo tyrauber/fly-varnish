@@ -1,0 +1,3 @@
+varnish: ./varnish.sh
+dashboard: PORT=8000 ./dashboard.sh
+web: PORT=3000 npm start
