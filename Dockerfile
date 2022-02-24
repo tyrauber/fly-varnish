@@ -8,17 +8,14 @@ ENV VARNISH_VERSION=7.0.2-r0 \
     VCL_FILE='default.vcl' \
     VARNISH_CACHE_SIZE=64m \
     VARNISH_PORT=80
-  
-RUN apk add -q \
-    npm \
-    curl \
-    git \
-    gzip \
-    tar \
-    sudo
 
-RUN apk --update add \
-  varnish=$VARNISH_VERSION
+RUN mkdir /data;
+
+RUN apk add -q npm curl git gzip tar
+
+RUN apk --update add varnish=$VARNISH_VERSION
+
+RUN export PKG_CONFIG_PATH=/dlib-install/usr/local/lib64/pkgconfig/
 
 COPY package.json /.
 
@@ -28,16 +25,17 @@ COPY package.json /.
 FROM base as build
 WORKDIR /tmp
 
-RUN apk --update add \
-  varnish-dev=$VARNISH_VERSION
+RUN apk --update add varnish-dev=$VARNISH_VERSION
 
 RUN apk add -q \
+    make \
     autoconf \
     automake \
     build-base \
     ca-certificates \
     cpio \
     gzip \
+    graphviz \
     libedit-dev \
     libtool \
     libunwind-dev \
@@ -45,16 +43,33 @@ RUN apk add -q \
     pcre-dev \
     py-docutils \
     py3-sphinx \
-    tar \
-    sudo
+    tar
 
 RUN git clone --depth=1 https://github.com/varnish/varnish-modules.git \
   && cd varnish-modules \
   && ./bootstrap \
   && ./configure --prefix=/usr \
   && make -j4 \
-  && make check \
   && make install
+
+RUN export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+
+RUN git clone --recursive https://github.com/maxmind/libmaxminddb && \
+  cd libmaxminddb && \
+  ./bootstrap && \
+  ./configure && \
+  make && \
+  make check && \
+  make install
+
+RUN git clone --recursive https://github.com/fgsch/libvmod-geoip2 && \
+    cd libvmod-geoip2 && \
+    git checkout main && \
+    ./autogen.sh && \
+    ./configure && \
+    make check && \
+    make install
+
 
 RUN curl -L https://github.com/DarthSim/hivemind/releases/download/v1.1.0/hivemind-v1.1.0-linux-amd64.gz -o hivemind.gz \
   && gunzip hivemind.gz \
@@ -62,8 +77,8 @@ RUN curl -L https://github.com/DarthSim/hivemind/releases/download/v1.1.0/hivemi
 
 RUN rm -rf /tmp
 
-#
-# ---- Dependencies ----
+# #
+# # ---- Dependencies ----
 
 FROM base AS dependencies
 
@@ -72,6 +87,20 @@ RUN npm install --only=production
 RUN cp -R node_modules /prod_node_modules
 RUN npm install
 
+# #
+# # ---- DATA ----
+
+# ARG MAXMIND_LICENSE_KEY
+
+# RUN if test -z $MAXMIND_LICENSE_KEY && test ! -f /data/GeoLite2-City.mmdb ; then\
+#   echo "********** MAXMIND_LICENSE_KEY IS NOT FOUND"; \
+# else\
+#   echo "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${MAXMIND_LICENSE_KEY}&suffix=tar.gz" ;\
+#   curl -L "https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=${MAXMIND_LICENSE_KEY}&suffix=tar.gz" | tar xz ;\
+#   mv */*.mmdb  /data;\
+#   ls /data;\
+# fi
+
 #
 # ---- Release ----
 FROM base AS release
@@ -79,6 +108,9 @@ WORKDIR /app
 COPY --from=dependencies /prod_node_modules ./node_modules
 COPY --from=build /usr/local/bin/hivemind /usr/local/bin/hivemind
 COPY --from=build /usr/lib/varnish/vmods/ /usr/lib/varnish/vmods/
+COPY --from=build /usr/local/lib/libmaxminddb.*  /usr/local/lib/
+# COPY --from=dependencies /data /data
+RUN ls
 
 COPY . .
 COPY default.vcl /etc/varnish/default.vcl

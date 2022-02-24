@@ -2,6 +2,9 @@
 
 app = "fly-varnish"
 
+[mounts]
+source="varnish_data"
+destination="/data"
 
 [[services]]
   internal_port = 8080

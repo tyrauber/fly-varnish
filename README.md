@@ -1,5 +1,22 @@
 # fly-varnish
-A Varnish Docker Container Caching a Node Server on Fly.io.
+A varnish docker image for caching, purging and logging services on Fly.io.
+
+## Features
+
+  - Alpine:Latest Docker Container (~ 230Mb)
+  - Varnish 7.0.2
+  - [Varnish Modules](https://github.com/varnish/varnish-modules)
+    + [accept](https://github.com/varnish/varnish-modules/blob/master/src/vmod_accept.vcc): Filter accept-like headers
+    + [bodyaccess](https://github.com/varnish/varnish-modules/blob/master/src/vmod_bodyaccess.vcc): Client request body access
+    + [header](https://github.com/varnish/varnish-modules/blob/master/src/vmod_header.vcc): Modify and change complex HTTP headers
+    + [saintmode](https://github.com/varnish/varnish-modules/blob/master/src/vmod_saintmode.vcc): 3.0-style saint mode
+    + [str](https://github.com/varnish/varnish-modules/blob/master/src/vmod_str.vcc): String operations
+    + [tcp](https://github.com/varnish/varnish-modules/blob/master/src/vmod_tcp.vcc): TCP connections tweaking
+    + [var](https://github.com/varnish/varnish-modules/blob/master/src/vmod_var.vcc): Variable support
+    + [vsthrottle](https://github.com/varnish/varnish-modules/blob/master/src/vmod_vsthrottle.vcc): Request and bandwidth throttling
+    + [xkey](https://github.com/varnish/varnish-modules/blob/master/src/vmod_xkey.vcc): Advanced cache invalidations
+  - [libvmod-geoip2](https://github.com/fgsch/libvmod-geoip2): MaxMind GeoIP2 Geolocation.
+
 
 ## Usage
 
@@ -7,6 +24,14 @@ A Varnish Docker Container Caching a Node Server on Fly.io.
  - Build the docker container: `npm run docker:build`
  - Run app locally: `npm run docker:test`
  - Open `http://localhost:8080`
+
+## Features
+
+  - Alpine:Latest Docker Container (~ 230Mb)
+  - Varnish 7.0.2
+  - [Varnish Modules](https://github.com/varnish/varnish-modules)
+    + 
+  - [libvmod-geoip2](https://github.com/fgsch/libvmod-geoip2)
 
 ```
 $ curl -I http://localhost:8080
@@ -76,5 +101,14 @@ $ fly logs
 And we are pushing Varnish Logs to Fly. AWESOME.
 
 ## Further Reading:
+
+[varnishncsa](https://varnish-cache.org/docs/trunk/reference/varnishncsa.html) - Varnish Logging
+
+Customize the log output. For exampple:
+```
+/usr/bin/varnishncsa -w /dev/stdout -F '%{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\" \"%{Varnish:hitmiss}x\"'
+```
+
+**To-do:** Pass the the output log format string (-F) in through the Procfile as an argument. Will make it customizable without having to rebuild the docker file.
 
 [https://stackoverflow.com/a/61030478/2158127](https://stackoverflow.com/a/61030478/2158127)
