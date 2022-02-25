@@ -1,14 +1,13 @@
 {
   "name": "fly-varnish",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "private": "true",
   "scripts": {
-    "start": "node dashboard.js",
-    "image:build": "DOCKER_BUILDKIT=0 docker build -t fly-varnish . -f ./apps/fly-varnish/Dockerfile",
-    "image:start": "docker run -p 8080:8080  -p 8000:8000 -p 3000:3000 fly-varnish",
-    "example:build": "DOCKER_BUILDKIT=0 docker build -t fly-varnish-example . -f ./apps/example/Dockerfile",
-    "example:start": "docker run -p 8080:8080  -p 8000:8000 -p 3000:3000 fly-varnish-example"
+    "image:build": "DOCKER_BUILDKIT=0 docker build  -t tyrauber/fly-varnish . -f ./apps/fly-varnish/Dockerfile",
+    "image:start": "docker run -p 8080:8080  -p 8000:8000 -p 3000:3000 tyrauber/fly-varnish",
+    "example:build": "DOCKER_BUILDKIT=0 docker build  -t fly-varnish-example . -f ./apps/example/Dockerfile",
+    "example:start": "docker run -p 8080:8080 -p 8000:8000 -p 3000:3000 fly-varnish-example"
   },
   "dependencies": {
     "@maxmind/geoip2-node": "^3.4.0",
