@@ -1,10 +1,7 @@
-# fly.toml file generated for fly-varnish on 2022-02-23T08:35:54-04:00
+# fly.toml file generated for fly-varnish-example on 2022-02-24T22:52:49-04:00
 
 app = "fly-varnish-example"
 
-[mounts]
-source="varnish_data"
-destination="/data"
 
 [[services]]
   internal_port = 8080
