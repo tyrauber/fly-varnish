@@ -4,9 +4,9 @@
   "license": "MIT",
   "private": "true",
   "scripts": {
-    "image:build": "DOCKER_BUILDKIT=0 docker build  -t tyrauber/fly-varnish . -f ./apps/fly-varnish/Dockerfile",
+    "image:build": "docker buildx build --no-cache .  -t tyrauber/fly-varnish",
     "image:start": "docker run -p 8080:8080  -p 8000:8000 -p 3000:3000 tyrauber/fly-varnish",
-    "example:build": "DOCKER_BUILDKIT=0 docker build  -t fly-varnish-example . -f ./apps/example/Dockerfile",
+    "example:build": "docker build buildx -t fly-varnish-example . -f ./apps/example/Dockerfile",
     "example:start": "docker run -p 8080:8080 -p 8000:8000 -p 3000:3000 fly-varnish-example"
   },
   "dependencies": {

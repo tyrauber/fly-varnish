@@ -83,12 +83,13 @@ FROM base AS dependencies
 
 WORKDIR /apps/fly-varnish
 
-COPY package.json .
+COPY ./package.json .
 RUN npm set progress=false && npm config set depth 0
 RUN npm install --only=production 
 RUN cp -R node_modules ./prod_node_modules
 RUN npm install
 RUN rm package.json
+
 # #
 # # ---- DATA ----
 
@@ -106,19 +107,18 @@ RUN rm package.json
 #
 # ---- Release ----
 FROM base AS release
-WORKDIR /apps/fly-varnish
+
+WORKDIR /apps/fly-varnish/
+COPY . .
+ADD Procfile /app/Procfile
+ADD default.vcl /etc/varnish/default.vcl
+
 COPY --from=dependencies /apps/fly-varnish/prod_node_modules /apps/fly-varnish/node_modules
 COPY --from=build /usr/local/bin/hivemind /usr/local/bin/hivemind
 COPY --from=build /usr/lib/varnish/vmods/ /usr/lib/varnish/vmods/
 COPY --from=build /usr/local/lib/libmaxminddb.*  /usr/local/lib/
 
 # COPY --from=dependencies /data /data
-
-COPY /apps/fly-varnish/* /apps/fly-varnish/
-COPY /apps/fly-varnish/default.vcl /etc/varnish/default.vcl
-COPY /apps/fly-varnish/Procfile Procfile
-
-RUN ls /apps/fly-varnish
 
 RUN chmod +x /usr/local/bin/hivemind
 RUN chmod +x /apps/fly-varnish/*.sh
