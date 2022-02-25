@@ -1,8 +1,7 @@
-FROM tyrauber/fly-varnish
+FROM docker.io/tyrauber/fly-varnish
 
 WORKDIR /app
 COPY package.json /app
 RUN npm install 
-RUN npm install esbuild-linux-arm64@0.14.22
-COPY /apps/example .
+COPY . .
 RUN npm run build

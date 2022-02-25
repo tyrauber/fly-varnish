@@ -32,13 +32,15 @@ $ fly launch
 
 ```
 
-Create the following `Dockfile`:
+Create the following `Dockfile` in your root project directory:
 
 ```
-FROM fly-varnish
+FROM docker.io/tyrauber/fly-varnish
+
 WORKDIR /app
-COPY . .
+COPY package.json /app
 RUN npm install
+COPY . .
 RUN npm run build
 ```
 
