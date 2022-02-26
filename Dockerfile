@@ -68,10 +68,10 @@ FROM base as release
 RUN apk add varnish redis
 
 WORKDIR /apps/fly-varnish/
-COPY *.sh *.js .
+COPY *.sh *.js *.vcl .
 COPY redis.conf /usr/local/etc/redis/redis.conf
 ADD Procfile Procfile
-ADD default.vcl /etc/varnish/default.vcl
+ADD *.vcl /etc/varnish/
 
 COPY --from=dependencies /apps/fly-varnish/prod_node_modules /apps/fly-varnish/node_modules
 COPY --from=build /usr/lib/varnish/vmods/* /usr/lib/varnish/vmods/
@@ -82,8 +82,8 @@ RUN chmod +x /usr/local/bin/hivemind
 RUN chmod +x /apps/fly-varnish/*.sh
 
 EXPOSE 3000 8080 6379
-ENV PORT=3000
-ENV REDIS_PASSWORD=fly-v@rn1sh
+ARG PORT=3000
+ARG REDIS_PASSWORD=password
 
 RUN mkdir /data
 RUN ["chmod", "+w", "/dev/stdout"]

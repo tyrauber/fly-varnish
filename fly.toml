@@ -1,9 +1,19 @@
 # fly.toml file generated for fly-varnish-example on 2022-02-24T22:52:49-04:00
 
-app = "fly-varnish-example"
+app = "fly-varnish"
 
-[build]
-  image = "tyrauber/fly-varnish:latest"
+# [build]
+#   image = "ghcr.io/tyrauber/fly-varnish:develop"
+
+[env]
+  PRIMARY_REGION = "mia"
+  VARNISH_CONFIG_PATH = "/etc/varnish/default.geo.vcl"
+  VARNISH_STORAGE_PATH = "/data"
+  VARNISH_STORAGE_SIZE= "1G"
+
+[mount]
+  destination = "/data"
+  source = "data"
 
 [[services]]
   internal_port = 8080
@@ -16,3 +26,7 @@ app = "fly-varnish-example"
   [[services.ports]]
     handlers = ["tls", "http"]
     port = "443"
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = "6379"

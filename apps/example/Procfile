@@ -1,3 +1,0 @@
-varnish: /apps/fly-varnish/varnish.sh
-dashboard: PORT=8000 node /apps/fly-varnish/dashboard.js
-web: PORT=3000 npm start
