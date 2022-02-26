@@ -3,6 +3,9 @@ name: Build and Publish
 on:
   push:
     # branches: [main]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push-docker-image:
@@ -12,15 +15,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@master
 
       - name: Set up Docker Buildx
         id: buildx
@@ -32,48 +26,34 @@ jobs:
           platforms: all
 
       - name: Login to DockerHub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Prepare
-        id: prep
-        run: |
-          DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${GITHUB_REPOSITORY#*/}
-          GHCR_IMAGE=${{ github.actor }}/${GITHUB_REPOSITORY#*/}
-          BRANCH_NAME=${{ steps.extract_branch.outputs.branch }}
-          VERSION=${{ steps.package-version.outputs.current-version}}
-          SHORTREF=${GITHUB_SHA::8}
-      
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${ GITHUB_REF#refs/*/ }
-          fi
-          TAGS="${GHCR_IMAGE}:${BRANCH_NAME}-${VERSION},${GHCR_IMAGE}:${SHORTREF}"
-          #TAGS="TAGS,${DOCKER_IMAGE}:${BRANCH_NAME}-${VERSION},${DOCKER_IMAGE}:${SHORTREF}"
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-             TAGS="$TAGS,${GHRC_IMAGE}:${BRANCH_NAME}-latest"
-             #TAGS="$TAGS,${DOCKER_IMAGE}:${BRANCH_NAME}-latest"
-          fi
-
-          # Set output parameters.
-          echo ::set-output name=tags::${TAGS}
-          echo ::set-output name=docker_image::${DOCKER_IMAGE}
-
       - name: Login to Github Packages
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: Build image and push to Docker Hub and GitHub Container Registry
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          builder: ${{ steps.buildx.outputs.name }}
           context: .
+          push: ${{ github.event_name != 'pull_request' }}
           platforms: linux/amd64,linux/arm64,linux/ppc64le
-          tags: ${{ steps.prep.outputs.tags }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
