@@ -84,7 +84,6 @@ RUN chmod +x /apps/fly-varnish/*.sh
 EXPOSE 3000 8080 6379
 ENV PORT=3000
 ENV REDIS_PASSWORD=fly-v@rn1sh
-RUN echo "REDIS_PASSWORD ${REDIS_PASSWORD}"
 
 RUN mkdir /data
 RUN ["chmod", "+w", "/dev/stdout"]
