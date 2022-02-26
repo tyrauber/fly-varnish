@@ -1,16 +1,17 @@
 {
   "name": "fly-varnish",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "license": "MIT",
   "private": "true",
   "scripts": {
-    "image:build": "docker buildx build --no-cache .  -t tyrauber/fly-varnish",
+    "image:build": "docker buildx build --progress=plain .  -t tyrauber/fly-varnish",
     "image:start": "docker run -p 8080:8080  -p 8000:8000 -p 3000:3000 tyrauber/fly-varnish",
     "example:build": "docker buildx build ./apps/example  -t fly-varnish-example",
     "example:start": "docker run -p 8080:8080 -p 8000:8000 -p 3000:3000 fly-varnish-example"
   },
   "dependencies": {
     "@maxmind/geoip2-node": "^3.4.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "ioredis": "^4.28.5"
   }
 }

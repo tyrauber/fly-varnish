@@ -65,10 +65,11 @@ RUN npm set progress=false \
 
 FROM base as release
 
-RUN apk add varnish
+RUN apk add varnish redis
 
 WORKDIR /apps/fly-varnish/
 COPY *.sh *.js .
+COPY redis.conf /usr/local/etc/redis/redis.conf
 ADD Procfile Procfile
 ADD default.vcl /etc/varnish/default.vcl
 
@@ -80,9 +81,13 @@ COPY --from=build /usr/local/lib/libmaxminddb.*  /usr/local/lib/
 RUN chmod +x /usr/local/bin/hivemind
 RUN chmod +x /apps/fly-varnish/*.sh
 
-EXPOSE 3000 8080
+EXPOSE 3000 8080 6379
 ENV PORT=3000
+ENV REDIS_PASSWORD=fly-v@rn1sh
+RUN echo "REDIS_PASSWORD ${REDIS_PASSWORD}"
 
+RUN mkdir /data
 RUN ["chmod", "+w", "/dev/stdout"]
+RUN ["chmod", "+w", "/data/"]
 
 CMD ["/usr/local/bin/hivemind"]
